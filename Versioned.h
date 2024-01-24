@@ -90,7 +90,7 @@ private:
 			segment = segment->Parent();
 		}
 
-		if (segment = ipJoin) {
+		if (segment == ipJoin) {
 			Set(ipMain, _versions[ipJoin->Version()]);
 		}
 	}
