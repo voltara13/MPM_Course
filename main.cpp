@@ -16,9 +16,9 @@ void ThreadFunction(Versioned<T>& iVersioned, std::function<void(Versioned<T>&, 
 	for (int i = 0; i < 5; ++i)
 	{
 		const auto ms = roller();
-		const auto a = std::this_thread::get_id();
+		const auto id = std::this_thread::get_id();
 		std::this_thread::sleep_for(std::chrono::milliseconds(ms));
-		std::cout << ms << " " << a << "\n";
+		std::cout << ms << " " << id << "\n";
 
 		iAction(iVersioned, ms);
 	}
@@ -40,8 +40,12 @@ void RunExample(std::function<void(Versioned<T>&, int)> iAction, std::function<v
 int main()
 {
 	RunExample<int>(
-		[](Versioned<int>& iVersioned, int ms) { 
-			iVersioned = ms; 
+		[](Versioned<int>& iVersioned, int ms) {
+			auto fork = Revision::pCurrentRevision->Fork([&]() { 
+				iVersioned = ms; 
+			});
+
+			Revision::pCurrentRevision->Join(fork);
 		}, 
 		[](Versioned<int>& iVersioned) {
 			std::cout << *iVersioned << "\n"; 
@@ -49,9 +53,13 @@ int main()
 
 	RunExample<std::vector<int>>(
 		[](Versioned<std::vector<int>>& iVersioned, int ms) {
-			auto temp = (*iVersioned);
-			temp.push_back(ms);
-			iVersioned = temp;
+			auto fork = Revision::pCurrentRevision->Fork([&]() { 
+				auto temp = (*iVersioned);
+				temp.push_back(ms);
+				iVersioned = temp;
+			});
+
+			Revision::pCurrentRevision->Join(fork);
 		},
 		[](Versioned<std::vector<int>>& iVersioned) {
 			for (const auto& elm : *iVersioned) {
@@ -62,9 +70,13 @@ int main()
 
 	RunExample<std::queue<int>>(
 		[](Versioned<std::queue<int>>& iVersioned, int ms) {
-			auto temp = (*iVersioned);
-			temp.push(ms);
-			iVersioned = temp;
+			auto fork = Revision::pCurrentRevision->Fork([&]() {
+				auto temp = (*iVersioned);
+				temp.push(ms);
+				iVersioned = temp;
+			});
+
+			Revision::pCurrentRevision->Join(fork);
 		},
 		[](Versioned<std::queue<int>>& iVersioned) {
 			auto queue = (*iVersioned);
@@ -78,9 +90,13 @@ int main()
 
 	RunExample<std::stack<int>>(
 		[](Versioned<std::stack<int>>& iVersioned, int ms) {
-			auto temp = (*iVersioned);
-			temp.push(ms);
-			iVersioned = temp;
+			auto fork = Revision::pCurrentRevision->Fork([&]() {
+				auto temp = (*iVersioned);
+				temp.push(ms);
+				iVersioned = temp;
+			});
+
+			Revision::pCurrentRevision->Join(fork);
 		},
 		[](Versioned<std::stack<int>>& iVersioned) {
 			auto stack = (*iVersioned);

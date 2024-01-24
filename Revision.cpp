@@ -5,16 +5,12 @@
 
 Revision* Revision::pCurrentRevision = new Revision();
 
-Revision::Revision()
+Revision::Revision() : _pRoot(new Segment()), _pCurrent(new Segment(_pRoot))
 {
-	_pRoot = new Segment();
-	_pCurrent = new Segment(_pRoot);
 }
 
-Revision::Revision(Segment* ipRoot, Segment* ipCurrent)
+Revision::Revision(Segment* ipRoot, Segment* ipCurrent) : _pRoot(ipRoot), _pCurrent(ipCurrent)
 {
-	_pRoot = ipRoot;
-	_pCurrent = ipCurrent;
 }
 
 Revision* Revision::Fork(std::function<void()> iAction)
@@ -23,18 +19,12 @@ Revision* Revision::Fork(std::function<void()> iAction)
 	_pCurrent->Release();
 	_pCurrent = new Segment(_pCurrent);
 
-	revision->_task = std::async(std::launch::async, [&]() {
+	revision->_task = std::async(std::launch::async, [&](std::function<void()> action) {
 		const auto previous = pCurrentRevision;
-
 		pCurrentRevision = revision;
-
-		__try {
-			iAction();
-		}
-		__finally {
-			pCurrentRevision = previous;
-		}
-	});
+		action();
+		pCurrentRevision = previous;
+	}, iAction);
 
 	return revision;
 }

@@ -45,6 +45,15 @@ public:
 		Set(Revision::pCurrentRevision, iValue);
 	}
 
+	void Collapse(Revision* ipMain, Segment* ipParent) override
+	{
+		if (!_versions.contains(ipMain->Current()->Version())) {
+			Set(ipMain, _versions[ipParent->Version()]);
+		}
+
+		Release(ipParent);
+	}
+
 	T operator * () const { return Get(); }
 
 	void operator = (const T& iValue) { Set(iValue); }
@@ -72,15 +81,6 @@ private:
 	void Release(Segment* ipRelease) override
 	{
 		_versions.erase(ipRelease->Version());
-	}
-
-	void Collapse(Revision* ipMain, Segment* ipParent) override
-	{
-		if (!_versions.contains(ipMain->Current()->Version())) {
-			Set(ipMain, _versions[ipParent->Version()]);
-		}
-
-		Release(ipParent);
 	}
 
 	void Merge(Revision* ipMain, Revision* ipJoinRev, Segment* ipJoin) override
