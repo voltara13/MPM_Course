@@ -10,8 +10,6 @@
 template<typename T>
 void ThreadFunction(Versioned<T>& iVersioned, std::function<void(Versioned<T>&, int)> iAction, T iInitValue, std::promise<Revision*>&& oRevision)
 {
-	std::cout << "CR: " << Revision::pCurrentRevision << "\n";
-
 	iVersioned = iInitValue;
 
 	std::uniform_int_distribution<int> distribution(1, 1000);
@@ -22,7 +20,7 @@ void ThreadFunction(Versioned<T>& iVersioned, std::function<void(Versioned<T>&, 
 		const auto ms = roller();
 		const auto id = std::this_thread::get_id();
 		std::this_thread::sleep_for(std::chrono::milliseconds(ms));
-		std::cout << "Thread id: " << id << "; Sleep ms: " << ms << "\n";
+		std::cout << "Thread id: " << id << "; Slept ms: " << ms << "\n";
 
 		iAction(iVersioned, ms);
 	}
