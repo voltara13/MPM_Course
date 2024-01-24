@@ -37,8 +37,8 @@ public:
 
 	void Collapse(Revision* ipMain, Segment* ipParent) override
 	{
-		if (!_versions.contains(ipMain->Current()->Version())) {
-			Set(ipMain, _versions[ipParent->Version()]);
+		if (!_versions.contains(ipMain->Current()->_version)) {
+			Set(ipMain, _versions[ipParent->_version]);
 		}
 
 		Release(ipParent);
@@ -62,36 +62,36 @@ private:
 	T Get(Revision* ipRevision)
 	{
 		auto segment = ipRevision->Current();
-		while (!_versions.contains(segment->Version())) {
-			segment = segment->Parent();
+		while (!_versions.contains(segment->_version)) {
+			segment = segment->_pParent;
 		}
 
-		return _versions[segment->Version()];
+		return _versions[segment->_version];
 	}
 
 	void Set(Revision* ipRevision, T iValue)
 	{
-		if (!_versions.contains(ipRevision->Current()->Version())) {
+		if (!_versions.contains(ipRevision->Current()->_version)) {
 			ipRevision->Current()->_written.push_back(this);
 		}
 
-		_versions[ipRevision->Current()->Version()] = iValue;
+		_versions[ipRevision->Current()->_version] = iValue;
 	}
 
 	void Release(Segment* ipRelease) override
 	{
-		_versions.erase(ipRelease->Version());
+		_versions.erase(ipRelease->_version);
 	}
 
 	void Merge(Revision* ipMain, Revision* ipJoinRev, Segment* ipJoin) override
 	{
 		auto segment = ipJoinRev->Current();
-		while (!_versions.contains(segment->Version())) {
-			segment = segment->Parent();
+		while (!_versions.contains(segment->_version)) {
+			segment = segment->_pParent;
 		}
 
 		if (segment == ipJoin) {
-			Set(ipMain, _versions[ipJoin->Version()]);
+			Set(ipMain, _versions[ipJoin->_version]);
 		}
 	}
 

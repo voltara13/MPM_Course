@@ -8,13 +8,12 @@ class IVersioned;
 class Segment
 {
 public:
-	Segment(Segment& iOther);
 	Segment(Segment* ipParnet = nullptr);
 
-	Segment* Parent();
-	int Version();
-
 	std::list<IVersioned*> _written;
+	Segment* _pParent;
+
+	int _version;
 
 private:
 	friend Revision;
@@ -23,9 +22,6 @@ private:
 	void Release();
 	void Collapse(Revision* ipMain);
 
-	Segment* _pParent;
-
-	int _version;
 	int _refcount;
 
 	static int versionCount;
