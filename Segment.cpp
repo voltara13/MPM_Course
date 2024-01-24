@@ -5,6 +5,16 @@
 
 int Segment::versionCount = 0;
 
+Segment::Segment(Segment& iOther)
+{
+	_pParent = new Segment(iOther._pParent);
+
+	_version = iOther._version;
+	_refcount = iOther._refcount;
+
+	_written = iOther._written;
+}
+
 Segment::Segment(Segment* ipParnet)
 {
 	_pParent = ipParnet;

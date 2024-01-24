@@ -3,7 +3,7 @@
 #include "Segment.h"
 #include "Versioned.h"
 
-Revision* Revision::pCurrentRevision = new Revision();
+thread_local Revision* Revision::pCurrentRevision = new Revision();
 
 Revision::Revision() : _pRoot(new Segment()), _pCurrent(new Segment(_pRoot))
 {
@@ -32,7 +32,9 @@ Revision* Revision::Fork(std::function<void()> iAction)
 void Revision::Join(Revision* ipJoin)
 {
 	__try {
-		ipJoin->_task.wait();
+		if (ipJoin->_task.valid())
+			ipJoin->_task.wait();
+
 		auto segment = ipJoin->_pCurrent;
 
 		while (segment != ipJoin->_pRoot) {

@@ -8,6 +8,7 @@ class IVersioned;
 class Segment
 {
 public:
+	Segment(Segment& iOther);
 	Segment(Segment* ipParnet = nullptr);
 
 	Segment* Parent();

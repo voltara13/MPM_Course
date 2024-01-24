@@ -35,16 +35,6 @@ public:
 		Set(default_v);
 	}
 
-	T Get() const
-	{
-		return Get(Revision::pCurrentRevision);
-	}
-
-	void Set(T iValue)
-	{
-		Set(Revision::pCurrentRevision, iValue);
-	}
-
 	void Collapse(Revision* ipMain, Segment* ipParent) override
 	{
 		if (!_versions.contains(ipMain->Current()->Version())) {
@@ -54,19 +44,29 @@ public:
 		Release(ipParent);
 	}
 
-	T operator * () const { return Get(); }
+	T operator * () { return Get(); }
 
 	void operator = (const T& iValue) { Set(iValue); }
 
 private:
-	T Get(Revision* ipRevision) const
+	T Get()
+	{
+		return Get(Revision::pCurrentRevision);
+	}
+
+	void Set(T iValue)
+	{
+		Set(Revision::pCurrentRevision, iValue);
+	}
+
+	T Get(Revision* ipRevision)
 	{
 		auto segment = ipRevision->Current();
 		while (!_versions.contains(segment->Version())) {
 			segment = segment->Parent();
 		}
 
-		return (*_versions.find(segment->Version())).second;
+		return _versions[segment->Version()];
 	}
 
 	void Set(Revision* ipRevision, T iValue)
