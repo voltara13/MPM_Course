@@ -19,34 +19,26 @@ Revision* Revision::Fork(std::function<void()> iAction)
 	_pCurrent->Release();
 	_pCurrent = new Segment(_pCurrent);
 
-	revision->_task = std::async(std::launch::async, [&](std::function<void()> action) {
-		const auto previous = pCurrentRevision;
-		pCurrentRevision = revision;
-		action();
-		pCurrentRevision = previous;
-	}, iAction);
+	revision->_task = std::async(std::launch::async, iAction);
 
 	return revision;
 }
 
 void Revision::Join(Revision* ipJoin)
 {
-	__try {
-		ipJoin->_task.wait();
-		auto segment = ipJoin->_pCurrent;
+	ipJoin->_task.wait();
+	auto segment = ipJoin->_pCurrent;
 
-		while (segment != ipJoin->_pRoot) {
-			for (const auto& versioned : segment->_written) {
-				versioned->Merge(this, ipJoin, segment);
-			}
-
-			segment = segment->_pParent;
+	while (segment != ipJoin->_pRoot) {
+		for (const auto& versioned : segment->_written) {
+			versioned->Merge(this, ipJoin, segment);
 		}
+
+		segment = segment->_pParent;
 	}
-	__finally {
-		ipJoin->_pCurrent->Release();
-		_pCurrent->Collapse(this);
-	}
+
+	ipJoin->_pCurrent->Release();
+	_pCurrent->Collapse(this);
 }
 
 Segment* Revision::Root()
